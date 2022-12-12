@@ -1,0 +1,32 @@
+# The following file control the parameters for simulation workflow
+
+preprocessing:  
+  seed: 3
+
+  monitor:
+  - max velocity
+  - E(k=1)
+
+
+algorithm:
+  discretization:
+    domain_length: 6.283185307179586
+    collocation_points_per_axis: 256
+
+    iterations: 100000
+    tau: 0.001
+    courant: 1
+    time_stepping_scheme: RK3
+
+  physical:
+    v_0: 0.0011
+    v_ratio: 1
+    k_min: 33
+    k_max: 40
+
+
+postprocessing:
+  save_path: ./data/simulation
+
+  save_quantities:
+  - w_k
