@@ -64,7 +64,7 @@ def model_problem(k_norm: np.ndarray, K_MIN: int, K_MAX: int, V_0: float, V_RATI
     return v_eff
 
 
-def prepare_stepping_scheme(STEPPING_SCHEME: str, v_eff: np.ndarray, k_vectors: np.ndarray, COURANT: float, N: int) -> tuple[Callable]:
+def prepare_stepping_scheme(STEPPING_SCHEME: str, v_eff: np.ndarray, k_vectors: np.ndarray, COURANT: float, h: float, N: int) -> tuple[Callable]:
     '''
     Placeholder
     '''
@@ -103,7 +103,7 @@ def prepare_stepping_scheme(STEPPING_SCHEME: str, v_eff: np.ndarray, k_vectors: 
     cfl_controller = functools.partial(
         controller, 
         courant = COURANT,
-        h = (2*np.pi)/N,
+        h = h,
         )
 
     energy = functools.partial(

@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     # Algorithm
     task.discretize(
-        L= 2*np.pi,#discretization["domain_length"],
+        L= discretization["domain_length"],
         N= discretization["collocation_points_per_axis"] 
     )
     task.set_initial_conditions(
@@ -48,6 +48,7 @@ if __name__ == "__main__":
         v_eff= re.register["v_eff"], 
         k_vectors= re.register["k_vectors"], 
         COURANT= discretization["courant"],
+        h = discretization["domain_length"]/discretization["collocation_points_per_axis"],
         N= discretization["collocation_points_per_axis"]
         )
     monitored, snapshots = task.solve(
