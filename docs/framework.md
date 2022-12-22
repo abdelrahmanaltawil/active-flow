@@ -21,7 +21,6 @@ sequenceDiagram
     simulation->>steady state analysis: give some snapshots
     steady state analysis-->>extrema search: analyze snapshots
     extrema search-->>hyper uniformity: analyze snapshots
-    extrema search-->>hyper uniformity: analyze snapshots
 ```
 
 ## Use Case
