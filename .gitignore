@@ -131,3 +131,10 @@ dmypy.json
 
 # data
 *.npy
+*.DS_Store
+
+# neptune
+.neptune/*
+
+# vscode
+.vscode/*
