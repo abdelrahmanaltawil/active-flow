@@ -4,17 +4,19 @@ preprocessing:
   seed: 3
 
   monitor:
+  - simulation time
+  - tau
   - max velocity
   - E(k=1)
 
 
 algorithm:
   discretization:
-    domain_length: 6.283185307179586
-    collocation_points_per_axis: 256
+    domain_length: 3.141592653589793
+    collocation_points_per_axis: 128
 
     iterations: 100000
-    tau: 0.001
+    tau: 0.0001
     courant: 1
     time_stepping_scheme: RK3
 
