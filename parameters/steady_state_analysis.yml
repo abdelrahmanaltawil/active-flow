@@ -1,7 +1,8 @@
 # The following file control the parameters for steady state analysis workflow
 
 preprocessing:  
-  experiment_ID: AC-660
+  experiment_ID: AC-909
+
 
   download_path: ./data/simulation
 
@@ -12,9 +13,10 @@ postprocessing:
   convergence_at: 15000
 
   snapshots_locations:
-  - 100000
-  - 150000
-  - 170000
-  - 200000
-  - 220000
-  - 240000
+  # - '800000 : 1000000'
+  - '20000'
+  - '40000'
+  - '50000'
+  - '60000'
+  - '70000'
+  - '90000'
