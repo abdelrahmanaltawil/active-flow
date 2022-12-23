@@ -2,7 +2,7 @@
 # The following file control the parameters for steady state analysis workflow
 
 preprocessing:  
-  experiment_ID: AC-801
+  experiment_ID: AC-960
   download_path: ./data/extrema_search
 
 
