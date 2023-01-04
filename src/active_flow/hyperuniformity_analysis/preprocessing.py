@@ -38,7 +38,7 @@ def load_arrays(read_path: pathlib.Path, snapshots_locations: list[str]) -> tupl
     for pattern in snapshots_file_pattern:
         snapshots_paths.append(read_path.joinpath("snapshots/extrema").glob(pattern)) 
 
-    
+
     keys = ["Iteration = " + str(location) for location in snapshots_locations]
     for iteration, iteration_extrema_paths in zip(keys, snapshots_paths):
         extrema={}
@@ -46,7 +46,8 @@ def load_arrays(read_path: pathlib.Path, snapshots_locations: list[str]) -> tupl
             key = path.stem[:search(r"\d", path.stem).start()-1]
             extrema[key] = np.load(path)
         
-        snapshots[iteration] = extrema
+        if extrema:
+            snapshots[iteration] = extrema
 
     # register
     re.register["operators"] = operators
