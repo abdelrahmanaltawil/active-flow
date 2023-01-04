@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+# local imports
+import active_flow.extrema_search.helpers.axis_formater as formatter
 
 
 def save_arrays(operators: dict, extrema_snapshots: dict, save_path: pathlib.Path) -> list:
@@ -44,7 +46,7 @@ def remove_data(data_path: pathlib.Path) -> None:
             file_path.unlink()
 
 
-def plot_point_cloud_snapshots(extrema_snapshots: dict, symbol: str) -> list[plt.figure]:
+def plot_point_cloud_snapshots(x_vector: np.ndarray, extrema_snapshots: dict, symbol: str) -> list[plt.figure]:
     '''
     Placeholder 
     '''
@@ -61,22 +63,20 @@ def plot_point_cloud_snapshots(extrema_snapshots: dict, symbol: str) -> list[plt
 
     figure, ax = plt.subplots(2,3)
     figure.suptitle(symbol, fontweight="bold")
-    # figure=[]
+
     for i, (snapshot_key, snapshot_value) in enumerate(extrema_snapshots.items()):
 
-            # fig, ax = plt.subplots(figsize=(10, 10))
             _plot_point_cloud(
                 ax= ax.flatten()[i],
-                # ax= ax,
+                x_vector= x_vector,
                 extrema= snapshot_value[symbol],
                 iteration= snapshot_key
                 )
-            # figure.append(fig)
 
     return figure
 
 
-def _plot_point_cloud(ax: plt.Axes, extrema: np.ndarray, iteration: str) -> None:
+def _plot_point_cloud(ax: plt.Axes, x_vector: np.ndarray, extrema: np.ndarray, iteration: str) -> None:
     '''
     Placeholder
     '''
@@ -90,12 +90,12 @@ def _plot_point_cloud(ax: plt.Axes, extrema: np.ndarray, iteration: str) -> None
     )
 
     ax.set(
-        title= iteration,
-        xticks=[0, np.pi, 2*np.pi],
-        xticklabels=["0", "$\pi$", "$2\pi$"],
-        yticks=[0, np.pi, 2*np.pi],
-        yticklabels=["0", "$\pi$", "$2\pi$"]
+        title= iteration
         )
+    ax.xaxis.set_major_locator(plt.MultipleLocator(np.max(x_vector[:,:,0][0,:])/2))
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(formatter.multiple_formatter()))
+    ax.yaxis.set_major_locator(plt.MultipleLocator(np.max(x_vector[:,:,1][:,0])/2))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(formatter.multiple_formatter()))
 
 
 def plot_extrema_count_snapshots(extrema_snapshots: dict) -> plt.figure:
