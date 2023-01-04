@@ -82,18 +82,21 @@ def run(parameters: dict) -> str:
     run["image/all extrema count"].upload(figure)
 
     figure = postprocessing.plot_point_cloud_snapshots(
+        x_vector = re.register["operators"]["x_vectors"],
         extrema_snapshots = extrema_snapshots, 
         symbol= "All Extrema"
         )
     run["image/all extrema snapshots"].upload(figure)
 
     figure = postprocessing.plot_point_cloud_snapshots(
+        x_vector = re.register["operators"]["x_vectors"],
         extrema_snapshots = extrema_snapshots, 
         symbol= "Minima"
         )
     run["image/minima snapshots"].upload(figure)
 
     figure = postprocessing.plot_point_cloud_snapshots(
+        x_vector = re.register["operators"]["x_vectors"],
         extrema_snapshots = extrema_snapshots, 
         symbol= "Maxima"
         )
