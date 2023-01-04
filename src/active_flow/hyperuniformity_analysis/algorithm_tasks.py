@@ -189,13 +189,13 @@ def linear_curve_fitting(k: np.ndarray, radial_profile_snapshots: dict, k_interv
             k_max_index = np.where(averaged_quantity == s_k_max)
             k_max = k[k_max_index]
         
-            slop, y_intercept, r_squared = _linear_curve_fitting(
+            slop, y_intercept, _ = _linear_curve_fitting(
                 x= (k/k_max)[interval],
                 y= (averaged_quantity/s_k_max)[interval]
             )
         
         else:
-            slop, y_intercept, r_squared = _linear_curve_fitting(
+            slop, y_intercept, _ = _linear_curve_fitting(
                 x= k[interval],
                 y= averaged_quantity[interval]
             )
@@ -213,13 +213,13 @@ def linear_curve_fitting(k: np.ndarray, radial_profile_snapshots: dict, k_interv
                 k_max_index = np.where(snapshot_value[symbol] == s_k_max)
                 k_max = k[k_max_index]
             
-                slop, y_intercept, r_squared = _linear_curve_fitting(
+                slop, y_intercept, _ = _linear_curve_fitting(
                     x= (k/k_max)[interval],
                     y= (snapshot_value[symbol]/s_k_max)[interval]
                     )
             
             else:
-                slop, y_intercept, r_squared = _linear_curve_fitting(
+                slop, y_intercept, _ = _linear_curve_fitting(
                     x= k[interval],
                     y= snapshot_value[symbol][interval]
                     )
@@ -230,7 +230,7 @@ def linear_curve_fitting(k: np.ndarray, radial_profile_snapshots: dict, k_interv
         average_slop = np.average(slops)
         average_y_intercept = np.average(y_intercepts)
 
-    return average_slop, average_y_intercept, r_squared
+    return average_slop, average_y_intercept
 
 
 # def linear_curve_fitting(k: np.ndarray, radial_profile_snapshots: dict, k_interval: list[int]) -> tuple[float]:
