@@ -60,7 +60,7 @@ def run(parameters: dict) -> str:
     dk = abs(re.register["operators"]["k_vectors"][:,:,0][0,2] - re.register["operators"]["k_vectors"][:,:,0][0,1])
 
     for symbol in ["all_extrema", "minima", "maxima"]:
-        average_slop, average_y_intercept, _ = task.linear_curve_fitting(
+        average_slop, average_y_intercept = task.linear_curve_fitting(
             k= np.arange(dk, np.max(re.register["operators"]["k_vectors"][:,:,0][0,:]), dk),
             radial_profile_snapshots= re.register["snapshots_radial_profile"],
             k_interval= parameters["algorithm"]["k_interval"],
@@ -82,8 +82,8 @@ def run(parameters: dict) -> str:
             )
         run["plot/"+symbol+" radial_profile snapshots"].upload(figure)
 
-        average_slop, average_y_intercept, _ = task.linear_curve_fitting(
-            k= np.arange(1, np.max(re.register["operators"]["k_vectors"][:,:,0][0])),
+        average_slop, average_y_intercept = task.linear_curve_fitting(
+            k= np.arange(dk, np.max(re.register["operators"]["k_vectors"][:,:,0][0,:]), dk),
             radial_profile_snapshots= re.register["snapshots_radial_profile"],
             k_interval= parameters["algorithm"]["k_interval"],
             symbol= symbol,
