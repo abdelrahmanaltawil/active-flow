@@ -1,4 +1,5 @@
 # env imports
+import logging
 import zipfile
 import pathlib 
 import numpy as np
@@ -32,22 +33,23 @@ def load_arrays(read_path: pathlib.Path, snapshots_locations: list[str]) -> tupl
         operators[path.stem] = np.load(path)
     
     snapshots={}
-    snapshots_paths =[]
+    for extrema_type in ["all_extrema", "minima", "maxima"]:
 
-    snapshots_file_pattern = ["*"+str(location).zfill(8)+"*" for location in snapshots_locations]
-    for pattern in snapshots_file_pattern:
-        snapshots_paths.append(read_path.joinpath("snapshots/extrema").glob(pattern)) 
+        extrema_type_snapshots={}
+        for location in snapshots_locations:
+            file_name = extrema_type+"_"+str(location).zfill(8)+".npy"
+            extrema_path = read_path.joinpath("snapshots/extrema/"+file_name)
 
-
-    keys = ["Iteration = " + str(location) for location in snapshots_locations]
-    for iteration, iteration_extrema_paths in zip(keys, snapshots_paths):
-        extrema={}
-        for path in iteration_extrema_paths:
-            key = path.stem[:search(r"\d", path.stem).start()-1]
-            extrema[key] = np.load(path)
+            try:
+                extrema = np.load(extrema_path)
+            except OSError:
+                logging.warning("file "+str(extrema_path)+" could not be loaded.")
+                continue
+            
+            key = "Iteration = " + str(location)
+            extrema_type_snapshots[key] = extrema
         
-        if extrema:
-            snapshots[iteration] = extrema
+        snapshots[extrema_type] = extrema_type_snapshots
 
     # register
     re.register["operators"] = operators
