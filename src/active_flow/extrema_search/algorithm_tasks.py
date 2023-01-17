@@ -32,17 +32,23 @@ def create_grid(x: np.ndarray, y: np.ndarray, w: dict) -> dict:
 
     grids={}
     for key, value in w.items():
-        nodes = np.empty((len(x), len(y[0])), dtype=object)
+        # nodes = np.empty((len(x), len(y[0])), dtype=object)
 
-        # optimization is not the goal here
-        for i in range(len(x)):
-            for j in range(len(y[0])):
-                bool = at_boundary(i, j, len(x)-1)
-                nodes[i, j] = nd.Node(x[i,j], y[i,j], value[i,j], boundary=bool)
+        # # optimization is not the goal here
+        # for i in range(len(x)):
+        #     for j in range(len(y[0])):
+        #         bool = at_boundary(i, j, len(x)-1)
+        #         nodes[i, j] = nd.Node(x[i,j], y[i,j], value[i,j], boundary=bool)
 
-        for i, row in enumerate(nodes):
-            for j, node in enumerate(row):
-                find_neighbors(node, nodes, i, j) # this can take i and j
+        # for i, row in enumerate(nodes):
+        #     for j, node in enumerate(row):
+        #         find_neighbors(node, nodes, i, j) # this can take i and j
+
+        nodes = _create_grid(
+            x= x,
+            y= y,
+            w= value
+        )
 
         grids[key] = nodes
 
@@ -50,6 +56,26 @@ def create_grid(x: np.ndarray, y: np.ndarray, w: dict) -> dict:
     re.register["grids"] = grids
 
     return grids
+
+
+def _create_grid(x: np.ndarray, y: np.ndarray, w: np.ndarray) -> np.ndarray:
+    '''
+    Placeholder
+    '''
+
+    nodes = np.empty((len(x), len(y[0])), dtype=object)
+
+    # optimization is not the goal here
+    for i in range(len(x)):
+        for j in range(len(y[0])):
+            bool = at_boundary(i, j, len(x)-1)
+            nodes[i, j] = nd.Node(x[i,j], y[i,j], w[i,j], boundary=bool)
+
+    for i, row in enumerate(nodes):
+        for j, node in enumerate(row):
+            find_neighbors(node, nodes, i, j) # this can take i and j
+
+    return nodes
 
 
 def find_neighbors(node, nodes, i, j):
