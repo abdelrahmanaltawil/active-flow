@@ -1,3 +1,4 @@
+# env imports
 import pathlib 
 import numpy as np
 import pandas as pd
@@ -5,10 +6,44 @@ import matplotlib.pyplot as plt
 import scipy.fftpack as scipy
 import scipy.stats as scipy_stats
 
-
 # local imports
 import active_flow.hyperuniformity_analysis.algorithm_tasks as task
 
+
+def save_arrays(operators: dict, radial_profile_snapshots: dict, extrema_type: str, save_path: pathlib.Path) -> list:
+    '''
+    Placeholder
+    '''
+
+    save_path.mkdir(parents=True, exist_ok=True)
+    
+    for operator_key, operator_value in operators.items():
+        np.save(save_path.joinpath(operator_key), operator_value)
+
+
+    save_path = save_path.joinpath("snapshots/radial_profile/"+extrema_type)
+    save_path.mkdir(parents=True, exist_ok=True)
+
+    for snapshot_key, snapshot_value in radial_profile_snapshots.items():
+
+        iteration = snapshot_key.split("= ")[1].zfill(8)
+
+        np.save(save_path.joinpath(extrema_type+"_"+iteration), snapshot_value)
+
+
+def remove_data(data_path: pathlib.Path) -> None:
+    '''
+    This function is a design choice where we need to enforce the user
+    only to fetch data from experiments runs and not locally. 
+    
+    The argument is, when data is fetched for further analysis we need to
+    maintain the metadata experiment that generated the data we want to fetch 
+    so we can append these metadata of our new experiment.
+    '''
+
+    for file_path in data_path.rglob("*"):
+        if file_path.is_file():
+            file_path.unlink()
 
 
 def plot_structure_factor_snapshots(structure_factor: dict, symbol: str) -> list[plt.figure]:
@@ -33,7 +68,7 @@ def plot_structure_factor_snapshots(structure_factor: dict, symbol: str) -> list
         
         _plot_structure_factor(
             ax= ax.flatten()[i],
-            structure_factor= scipy.fftshift(value[symbol]),
+            structure_factor= scipy.fftshift(value),
             iteration= key
             )
 
@@ -60,7 +95,7 @@ def _plot_structure_factor(ax: plt.Axes, structure_factor: np.ndarray, iteration
         )
 
 
-def plot_radial_profile_snapshots(k_modes: np.ndarray, radial_profile_snapshots: dict, extrapolation_line: list, symbol: str) -> plt.figure:
+def plot_radial_profile_snapshots(k_modes: np.ndarray, radial_profile_snapshots: dict, symbol: str) -> plt.figure:
     '''
     Placeholder
     '''
@@ -80,14 +115,14 @@ def plot_radial_profile_snapshots(k_modes: np.ndarray, radial_profile_snapshots:
             
             ax.plot(
                 k_modes,
-                snapshot_value[symbol], 
+                snapshot_value, 
                 "o",
                 markersize=5,
                 mfc="none",
                 color="lightgray",
                 )  
             
-            accumulated_quantity = accumulated_quantity + snapshot_value[symbol]
+            accumulated_quantity = accumulated_quantity + snapshot_value
             if i == len(radial_profile_snapshots)-1: 
                 ax.plot(
                     k_modes,
@@ -97,39 +132,25 @@ def plot_radial_profile_snapshots(k_modes: np.ndarray, radial_profile_snapshots:
                     color="red",
                     label= "Averaged Value"
                     )
+                
+                save_path = pathlib.Path("./data/hyperuniformity_analysis/arrays/snapshots/radial_profile/averages/"+symbol)
+                save_path.mkdir(parents=True, exist_ok=True)
+                np.savetxt(
+                    fname= save_path.joinpath(symbol+"_radial_profile_mean"),
+                    X= accumulated_quantity/len(radial_profile_snapshots)
+                    )
     
     else:    
         for snapshot_key, snapshot_value in radial_profile_snapshots.items():
 
             ax.plot(
                 k_modes,
-                snapshot_value[symbol], 
+                snapshot_value, 
                 "o",
                 markersize=5,
                 mfc="none",
                 label= snapshot_key
                 )
-
-    slop, y_intercept = extrapolation_line
-    f = lambda x: slop*x + y_intercept
-    ax.plot(
-        k_modes,
-        f(k_modes),
-        "r--"
-        )
-
-    ax.annotate(
-       "$S(k=0) =$"+" {:.2E}".format(y_intercept),
-       xy= (np.mean(k_modes), f(np.mean(k_modes))),
-       xytext=(0, -15),
-       textcoords='offset points',
-       fontsize=12,
-       bbox= {
-        "boxstyle": "round",
-        "facecolor": "white",
-        "alpha": 0.8
-       }
-    )
 
     ax.set(
         xlabel= r"$k$",
@@ -141,7 +162,7 @@ def plot_radial_profile_snapshots(k_modes: np.ndarray, radial_profile_snapshots:
     return figure
 
 
-def plot_normalized_radial_profile_snapshots(k_modes: np.ndarray, radial_profile_snapshots: dict, extrapolation_line: list, symbol: str) -> plt.figure:
+def plot_normalized_radial_profile_snapshots(k_modes: np.ndarray, radial_profile_snapshots: dict, symbol: str) -> plt.figure:
     '''
     Placeholder
     '''
@@ -161,20 +182,20 @@ def plot_normalized_radial_profile_snapshots(k_modes: np.ndarray, radial_profile
         accumulated_quantity = np.zeros_like(k_modes) 
         for i, (snapshot_key, snapshot_value) in enumerate(radial_profile_snapshots.items()):
             
-            s_k_max = np.max(snapshot_value[symbol])
-            k_max_index = np.where(snapshot_value[symbol] == s_k_max)
+            s_k_max = np.max(snapshot_value)
+            k_max_index = np.where(snapshot_value == s_k_max)
             k_max = k_modes[k_max_index][0]
             
             ax.plot(
                 k_modes/k_max,
-                snapshot_value[symbol]/s_k_max, 
+                snapshot_value/s_k_max, 
                 "o",
                 markersize=5,
                 mfc="none",
                 color="lightgray",
                 )  
             
-            accumulated_quantity = accumulated_quantity + snapshot_value[symbol]
+            accumulated_quantity = accumulated_quantity + (snapshot_value/s_k_max)
             if i == len(radial_profile_snapshots)-1: 
                 s_k_max = np.max(accumulated_quantity/len(radial_profile_snapshots))
                 k_max_index = np.where(accumulated_quantity/len(radial_profile_snapshots) == s_k_max)
@@ -182,11 +203,22 @@ def plot_normalized_radial_profile_snapshots(k_modes: np.ndarray, radial_profile
 
                 ax.plot(
                     k_modes/k_max,
-                    (accumulated_quantity/len(radial_profile_snapshots))/s_k_max, 
+                    (accumulated_quantity/len(radial_profile_snapshots)), 
                     "o",
                     markersize=5,
                     color="red",
                     label= "Averaged Value"
+                    )
+
+                save_path = pathlib.Path("./data/hyperuniformity_analysis/arrays/snapshots/radial_profile/averages/"+symbol)
+                save_path.mkdir(parents=True, exist_ok=True)
+                np.savetxt(
+                    fname= save_path.joinpath(symbol+"_normalized_radial_profile_mean"),
+                    X= accumulated_quantity/len(radial_profile_snapshots)
+                    )
+                np.savetxt(
+                    fname= save_path.joinpath(symbol+"_normalized_k_modes"),
+                    X= k_modes/k_max
                     )
             
             if s_k_max > s_k_max_global:
@@ -197,13 +229,13 @@ def plot_normalized_radial_profile_snapshots(k_modes: np.ndarray, radial_profile
     else: 
         for snapshot_key, snapshot_value in radial_profile_snapshots.items():
             
-            s_k_max = np.max(snapshot_value[symbol])
-            k_max_index = np.where(snapshot_value[symbol] == s_k_max)
+            s_k_max = np.max(snapshot_value)
+            k_max_index = np.where(snapshot_value == s_k_max)
             k_max = k_modes[k_max_index][0]
             
             ax.plot(
                 k_modes/k_max,
-                snapshot_value[symbol]/s_k_max, 
+                snapshot_value/s_k_max, 
                 "o",
                 markersize=5,
                 mfc="none",
@@ -215,35 +247,6 @@ def plot_normalized_radial_profile_snapshots(k_modes: np.ndarray, radial_profile
             if k_max > k_max_global:
                 k_max_global = k_max
 
-    slop, y_intercept = extrapolation_line
-    f = lambda x: slop*x + y_intercept
-    
-    k_normalized = k_modes/k_max_global
-    N_k_extrapolation = f(k_normalized)
-
-    plot_limit = np.where(N_k_extrapolation < 1)
-    k_normalized = k_normalized[plot_limit]
-    N_k_extrapolation = N_k_extrapolation[plot_limit]
-
-    ax.plot(
-        k_normalized,
-        N_k_extrapolation,
-        "r--"
-        )
-
-    ax.annotate(
-       "$S(k=0) =$"+" {:.2E}".format(y_intercept),
-       xy= (np.mean(k_normalized), f(np.mean(k_normalized))),
-       xytext=(0, -15),
-       textcoords='offset points',
-       fontsize=12,
-       bbox= {
-        "boxstyle": "round",
-        "facecolor": "white",
-        "alpha": 0.8
-       }
-    )
-
     ax.set(
         xlabel= r"$k/K$",
         ylabel= r"$N(k)$"
@@ -254,7 +257,7 @@ def plot_normalized_radial_profile_snapshots(k_modes: np.ndarray, radial_profile
     return figure
 
 
-def plot_power_law_snapshots(k_modes: np.ndarray, radial_profile_snapshots: dict, extrapolation_line: list, symbol: str) -> plt.figure:
+def plot_power_law_snapshots(k_modes: np.ndarray, radial_profile_snapshots: dict, symbol: str) -> plt.figure:
     '''
     Placeholder
     '''
@@ -272,20 +275,20 @@ def plot_power_law_snapshots(k_modes: np.ndarray, radial_profile_snapshots: dict
         accumulated_quantity = np.zeros_like(k_modes) 
         for i, (snapshot_key, snapshot_value) in enumerate(radial_profile_snapshots.items()):
             
-            s_k_max = np.max(snapshot_value[symbol])
-            k_max_index = np.where(snapshot_value[symbol] == s_k_max)
+            s_k_max = np.max(snapshot_value)
+            k_max_index = np.where(snapshot_value == s_k_max)
             k_max = k_modes[k_max_index][0]
             
             ax.plot(
                 k_modes/k_max,
-                snapshot_value[symbol]/s_k_max, 
+                snapshot_value/s_k_max, 
                 "o",
                 markersize=5,
                 mfc="none",
                 color="lightgray",
                 )  
             
-            accumulated_quantity = accumulated_quantity + snapshot_value[symbol]
+            accumulated_quantity = accumulated_quantity + (snapshot_value/s_k_max)
             if i == len(radial_profile_snapshots)-1: 
                 s_k_max = np.max(accumulated_quantity/len(radial_profile_snapshots))
                 k_max_index = np.where(accumulated_quantity/len(radial_profile_snapshots) == s_k_max)
@@ -293,7 +296,7 @@ def plot_power_law_snapshots(k_modes: np.ndarray, radial_profile_snapshots: dict
 
                 ax.plot(
                     k_modes/k_max,
-                    (accumulated_quantity/len(radial_profile_snapshots))/s_k_max, 
+                    (accumulated_quantity/len(radial_profile_snapshots)), 
                     "o",
                     markersize=5,
                     color="red",
@@ -319,13 +322,13 @@ def plot_power_law_snapshots(k_modes: np.ndarray, radial_profile_snapshots: dict
     else: 
         for snapshot_key, snapshot_value in radial_profile_snapshots.items():
             
-            s_k_max = np.max(snapshot_value[symbol])
-            k_max_index = np.where(snapshot_value[symbol] == s_k_max)
+            s_k_max = np.max(snapshot_value)
+            k_max_index = np.where(snapshot_value == s_k_max)
             k_max = k_modes[k_max_index][0]
             
             ax.plot(
                 k_modes/k_max,
-                snapshot_value[symbol]/s_k_max, 
+                snapshot_value/s_k_max, 
                 "o",
                 markersize=5,
                 mfc="none",
@@ -372,8 +375,8 @@ def plot_k_max_snapshots(k_modes: np.ndarray, radial_profile_snapshots: dict, sy
     k_max_snapshots=[]
     for snapshot_key, snapshot_value in radial_profile_snapshots.items():
         
-        s_k_max = np.max(snapshot_value[symbol])
-        k_max_index = np.where(snapshot_value[symbol] == s_k_max)
+        s_k_max = np.max(snapshot_value)
+        k_max_index = np.where(snapshot_value == s_k_max)
         k_max = k_modes[k_max_index][0]
 
         s_k_max_snapshots.append(round(s_k_max, 3))
@@ -461,3 +464,53 @@ def compare_fitting_intervals(k: np.ndarray, radial_profile_snapshots: dict, int
     )
 
     return figure
+
+
+def get_trend_line(ax: plt.Axes, k: np.ndarray, extrapolation_line: list) -> plt.figure:
+    '''
+    Placeholder
+    '''
+
+    slop, y_intercept = extrapolation_line
+    f = lambda x: slop*x + y_intercept
+    ax.plot(
+        k,
+        f(k),
+        "r--"
+        )
+
+    ax.annotate(
+       "$S(k=0) =$"+" {:.2E}".format(y_intercept),
+       xy= (np.mean(k), f(np.mean(k))),
+       xytext=(0, -15),
+       textcoords='offset points',
+       fontsize=12,
+       bbox= {
+        "boxstyle": "round",
+        "facecolor": "white",
+        "alpha": 0.8
+       }
+    )
+
+
+    return ax
+
+
+def normalize_snapshots(k: np.ndarray, radial_profile_snapshots: dict, symbol: str) -> dict:
+    '''
+    Placeholder
+    '''
+
+    normalized_snapshots = {}
+    for i, (snapshot_key, snapshot_value) in enumerate(radial_profile_snapshots.items()):
+        
+        radial_profile_max = np.max(snapshot_value[symbol])
+        k_max_index = np.where(snapshot_value[symbol] == radial_profile_max)
+        k_max = k[k_max_index][0]
+        
+        k/k_max
+        
+        normalized_snapshots[snapshot_key] = snapshot_value[symbol]/radial_profile_max
+    
+    
+    return normalized_snapshots
