@@ -33,6 +33,16 @@ def discretize(L: float, N: int) -> tuple[np.ndarray]:
     return x_vectors, dx, k_vectors, dk
 
 
+def deAliasing_rule(k_square: np.ndarray, N: int, dk: float) -> np.ndarray:
+    '''
+    Placeholder
+    '''
+
+    deAlias = k_square < (2/3*(N/2)*dk)**2
+
+    return deAlias
+
+
 def set_initial_conditions(N: int) -> np.ndarray:
     '''
     Placeholder
@@ -65,21 +75,16 @@ def model_problem(k_norm: np.ndarray, K_MIN: int, K_MAX: int, V_0: float, V_RATI
     return v_eff
 
 
-def prepare_stepping_scheme(STEPPING_SCHEME: str, v_eff: np.ndarray, k_vectors: np.ndarray, COURANT: float, dx: float, dk: float, N: int) -> tuple[Callable]:
+def prepare_stepping_scheme(STEPPING_SCHEME: str, v_eff: np.ndarray, k_vectors: np.ndarray, k_square: np.ndarray, deAlias: np.ndarray, COURANT: float, 
+                            dx: float, dk: float, N: int) -> tuple[Callable]:
     '''
     Placeholder
     '''
 
     # operators
-    k_x, k_y= k_vectors[:,:,0], k_vectors[:,:,1]
-    k_square = k_x**2 + k_y**2
-    deAlias = k_square < (2/3*(N/2)*dk)**2
-
     k_inverse = np.zeros_like(k_square)
     np.place(k_inverse, k_square != 0, k_square[k_square != 0]**-1)
-    k_scale_bound = np.linspace(0,np.max(np.sqrt(k_square)), N)
-    factor = k_scale_bound[1] - k_scale_bound[0]
-
+    k_scale_bound = np.linspace(0, np.max(np.sqrt(k_square)), N)
 
 
     # stepping scheme functions
@@ -87,7 +92,7 @@ def prepare_stepping_scheme(STEPPING_SCHEME: str, v_eff: np.ndarray, k_vectors: 
         stepping_scheme,
         STEPPING_SCHEME= STEPPING_SCHEME, 
         v_eff= v_eff,
-        k_x= k_vectors[:,:,0], 
+        k_x= k_vectors[:,:,0],
         k_y= k_vectors[:,:,1], 
         k_square= k_vectors[:,:,0]**2 + k_vectors[:,:,1]**2, 
         k_inverse= k_inverse,  
@@ -96,15 +101,15 @@ def prepare_stepping_scheme(STEPPING_SCHEME: str, v_eff: np.ndarray, k_vectors: 
 
     velocity = functools.partial(
         velocity_calculation, 
-        k_x= k_x,
-        k_y = k_y,
+        k_x= k_vectors[:,:,0],
+        k_y= k_vectors[:,:,1],
         k_inverse= k_inverse
         )
 
     cfl_controller = functools.partial(
         controller, 
         courant = COURANT,
-        dx = dx,
+        dx = dx
         )
 
     energy = functools.partial(
@@ -112,7 +117,7 @@ def prepare_stepping_scheme(STEPPING_SCHEME: str, v_eff: np.ndarray, k_vectors: 
         k_norm= np.sqrt(k_square),
         dk= dk,
         N= N,
-        factor= factor
+        factor= k_scale_bound[1] - k_scale_bound[0]
         )
 
 

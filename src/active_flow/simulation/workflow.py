@@ -37,6 +37,11 @@ def run(parameters: dict) -> str:
     run["parameters/spatial_discretization_factor"].log(dx)
     run["parameters/frequency_discretization_factor"].log(dk)
 
+    deAlias = task.deAliasing_rule(
+        k_square= re.register["k_vectors"][:,:,0]**2 + re.register["k_vectors"][:,:,1]**2,
+        N= discretization["collocation_points_per_axis"],
+        dk= dk
+        )
     task.set_initial_conditions(
         N= discretization["collocation_points_per_axis"]
         )
@@ -50,7 +55,9 @@ def run(parameters: dict) -> str:
     task.prepare_stepping_scheme(
         STEPPING_SCHEME= discretization["time_stepping_scheme"], 
         v_eff= re.register["v_eff"], 
-        k_vectors= re.register["k_vectors"], 
+        k_vectors= re.register["k_vectors"],
+        k_square= re.register["k_vectors"][:,:,0]**2 + re.register["k_vectors"][:,:,1]**2, 
+        deAlias= deAlias,
         COURANT= discretization["courant"],
         dx= dx,
         dk= dk,
@@ -106,23 +113,23 @@ if __name__ == "__main__":
         parameters = yaml.safe_load(file)
     
 
-    simulations_settings = [
-        (np.pi, 128, 1000000, 1),
-        (np.pi, 128, 1000000, 2),
-        (np.pi, 128, 1000000, 5),
-        (4*np.pi, 512, 1000000, 1),
-        (4*np.pi, 512, 1000000, 2),
-        (4*np.pi, 512, 1000000, 5)
-    ]
+    # simulations_settings = [
+    #     (np.pi, 128, 1000000, 1),
+    #     (np.pi, 128, 1000000, 2),
+    #     (np.pi, 128, 1000000, 5),
+    #     (4*np.pi, 512, 1000000, 1),
+    #     (4*np.pi, 512, 1000000, 2),
+    #     (4*np.pi, 512, 1000000, 5)
+    # ]
     
-    for L, N, ITERATIONS, V_RATIO in simulations_settings:
+    # for L, N, ITERATIONS, V_RATIO in simulations_settings:
         
-        parameters["algorithm"]["discretization"]["domain_length"] = L
-        parameters["algorithm"]["discretization"]["collocation_points_per_axis"] = N
-        parameters["algorithm"]["discretization"]["iterations"] = ITERATIONS
-        parameters["algorithm"]["physical"]["v_ratio"] = V_RATIO
+    #     parameters["algorithm"]["discretization"]["domain_length"] = L
+    #     parameters["algorithm"]["discretization"]["collocation_points_per_axis"] = N
+    #     parameters["algorithm"]["discretization"]["iterations"] = ITERATIONS
+    #     parameters["algorithm"]["physical"]["v_ratio"] = V_RATIO
 
 
-        run(
-            parameters= parameters
-            )
+    run(
+        parameters= parameters
+        )
