@@ -3,7 +3,6 @@ import numpy as np
 import scipy.fftpack as scipy
 
 # local imports
-import helpers.register as re
 
 
 def stepping_scheme(w_k: np.ndarray, tau: float, STEPPING_SCHEME: str, v_eff: np.ndarray, k_x:np.ndarray, k_y: np.ndarray, 
