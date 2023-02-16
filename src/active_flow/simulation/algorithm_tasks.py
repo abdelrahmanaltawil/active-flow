@@ -6,7 +6,6 @@ import scipy.fftpack as scipy
 
 # local imports
 from helpers.time_stepping import stepping_scheme, controller, energy_calculation, velocity_calculation
-import helpers.register as re
 
 
 def discretize(L: float, N: int) -> tuple[np.ndarray]:
@@ -25,10 +24,6 @@ def discretize(L: float, N: int) -> tuple[np.ndarray]:
     dk = k_axis[2] - k_axis[1]
     k_x, k_y = np.meshgrid(k_axis, k_axis)
     k_vectors = np.stack((k_x, k_y), axis=2)
-
-    # register
-    re.register["x_vectors"] = x_vectors
-    re.register["k_vectors"] = k_vectors 
 
     return x_vectors, dx, k_vectors, dk
 
@@ -52,9 +47,6 @@ def set_initial_conditions(N: int) -> np.ndarray:
     w = np.random.normal(0, 1, size=(N,N))
     initial_w_k = scipy.fft2(w)
 
-    # register
-    re.register["initial_w_k"] = initial_w_k
-
     return initial_w_k
 
 
@@ -68,9 +60,6 @@ def model_problem(k_norm: np.ndarray, K_MIN: int, K_MAX: int, V_0: float, V_RATI
     v_eff[k_norm < K_MIN] = V_0
     v_eff[(k_norm >= K_MIN) & (k_norm <= K_MAX)] = -V_RATIO*V_0
     v_eff[k_norm > K_MAX] = 10*V_0
-
-    # register
-    re.register["v_eff"] = v_eff
 
     return v_eff
 
@@ -119,13 +108,6 @@ def prepare_stepping_scheme(STEPPING_SCHEME: str, v_eff: np.ndarray, k_vectors: 
         N= N,
         factor= k_scale_bound[1] - k_scale_bound[0]
         )
-
-
-    # register
-    re.register["time_step"] = time_step
-    re.register["cal_velocity"] = velocity
-    re.register["cfl_controller"] = cfl_controller
-    re.register["cal_energy"] = energy
 
     return time_step, velocity, cfl_controller, energy
 
