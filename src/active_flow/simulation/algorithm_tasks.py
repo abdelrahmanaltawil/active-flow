@@ -80,17 +80,17 @@ def prepare_stepping_scheme(STEPPING_SCHEME: str, v_eff: np.ndarray, k_vectors: 
     k_scale_bound = np.linspace(0,np.max(np.sqrt(k_square)), N)
     factor = k_scale_bound[1] - k_scale_bound[0]
 
-    # linear -> A: `v_eff * k^2 * w_k` & non-linear -> C: `u*wx + v*wy` functions
-    A = lambda w_k: v_eff*k_square*w_k*deAlias
-    C = lambda w_k: scipy.fft2(   np.real(scipy.ifft2(1j*k_y*(w_k*k_inverse)))  * np.real(scipy.ifft2(1j*k_x*w_k))
-                                + np.real(scipy.ifft2(-1j*k_x*(w_k*k_inverse))) * np.real(scipy.ifft2(1j*k_y*w_k)) )*deAlias 
+
 
     # stepping scheme functions
     time_step = functools.partial(
         stepping_scheme,
         STEPPING_SCHEME= STEPPING_SCHEME, 
-        A= A, 
-        C= C, 
+        v_eff= v_eff,
+        k_x= k_vectors[:,:,0], 
+        k_y= k_vectors[:,:,1], 
+        k_square= k_vectors[:,:,0]**2 + k_vectors[:,:,1]**2, 
+        k_inverse= np.place(np.zeros_like(v_eff), k_square != 0, k_square[k_square != 0]**-1),  
         deAlias= deAlias
         )
 
