@@ -90,7 +90,7 @@ def prepare_stepping_scheme(STEPPING_SCHEME: str, v_eff: np.ndarray, k_vectors: 
         k_x= k_vectors[:,:,0], 
         k_y= k_vectors[:,:,1], 
         k_square= k_vectors[:,:,0]**2 + k_vectors[:,:,1]**2, 
-        k_inverse= np.place(np.zeros_like(v_eff), k_square != 0, k_square[k_square != 0]**-1),  
+        k_inverse= k_inverse,  
         deAlias= deAlias
         )
 
